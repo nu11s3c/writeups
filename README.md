@@ -4,10 +4,6 @@
 
 <h1 align="center">nu11s3c / writeups</h1>
 
-<p align="center">
-  <strong>Retired machines · Practical methodology · Lessons learned</strong><br>
-  Recon first. Assumptions second. Screenshots only when they prove something.
-</p>
 
 <p align="center">
   <kbd>WINDOWS</kbd> &nbsp; <kbd>LINUX</kbd> &nbsp; <kbd>NETWORK</kbd> &nbsp; <kbd>WEB</kbd> &nbsp; <kbd>ACTIVE DIRECTORY</kbd>
