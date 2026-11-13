@@ -25,10 +25,7 @@ The tone is technical, with occasional jokes and memes where they belong. The ai
 
 | Lab | Platform | Target | Main techniques | Stage |
 |:---|:---|:---|:---|:---|
-| [Access](machines/access/README.md) | Hack The Box · retired | Windows Server 2008 R2 | Anonymous FTP → file analysis → Telnet → stored credentials | **Draft outline** |
-
-> [!NOTE]
-> A draft outline is a writing workspace, **not** a finished walkthrough. Completed articles will be linked and labeled when ready.
+| [Access](machines/access/README.md) | Hack The Box · retired | Windows Server 2008 R2 | Anonymous FTP → file analysis → Telnet → stored credentials / DPAPI | **Published** |
 
 ## `03 / What you'll find in a writeup`
 
