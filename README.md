@@ -21,12 +21,6 @@ A public record of my work on **authorized, publishable security labs**.
 |:---|:---|:---|:---|:---|
 | [Access](machines/access.md) | Hack The Box · retired | Windows Server 2008 R2 | Anonymous FTP → file analysis → Telnet → stored credentials / DPAPI | **Published** |
 
-## `03 / What you'll find in a writeup`
-
-- **Recon:** What was exposed, and which observations changed my priorities?
-- **Initial access:** What evidence connected the discovered artifacts to a foothold?
-- **Privilege escalation:** What changed my security context, and how did I verify it?
-- **Tradecraft:** Troubleshooting, false starts, and reusable techniques.
 
 ---
 
