@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../../assets/branding/nu11s3c-banner.svg" alt="nu11s3c security writeups" width="100%" />
+  <img src="../assets/branding/nu11s3c-banner.svg" alt="nu11s3c security writeups" width="100%" />
 </p>
 
 # delivery - hack the box
@@ -117,26 +117,26 @@ observations before attempting registration:
 - Ticket-status lookup asks for both an email address and ticket number
 - `curl -I http://helpdesk.delivery.htb/` returned HTTP `200 OK`, with an `OSTSESSID` cookie marked `HttpOnly`
 
-![Mattermost login](images/Pasted%20image%2020261113214735.png)
+![Mattermost login](../assets/images/delivery/Pasted%20image%2020261113214735.png)
 
-![osTicket support center](images/Pasted%20image%2020261113215443.png)
+![osTicket support center](../assets/images/delivery/Pasted%20image%2020261113215443.png)
 
 ### registration verification and authenticated enumeration
 
 **methodology:** the HelpDesk ticket-specific address acted as an accessible verification mailbox for a separate Mattermost identity. this was demonstrated by retrieving the activation email, verifying the account, and accessing internal messages. the disclosed server credentials remain **unverified** until tested on an authorized service.
 
 opening a ticket
-![Guest ticket creation](images/Pasted%20image%2020261113220444.png)
+![Guest ticket creation](../assets/images/delivery/Pasted%20image%2020261113220444.png)
 
-![Ticket thread](images/Pasted%20image%2020261113220457.png)
+![Ticket thread](../assets/images/delivery/Pasted%20image%2020261113220457.png)
 
 using the email provided by opening the ticket, I signed up and received the verification email from `Mattermost`
 *Screenshot retained privately because it contains an email verification token.*
 
-![Verified Mattermost email](images/Pasted%20image%2020261113221645.png)
+![Verified Mattermost email](../assets/images/delivery/Pasted%20image%2020261113221645.png)
 
 after verification and authentication, I was able to join the internal team
-![Internal team selection](images/Pasted%20image%2020261113221654.png)
+![Internal team selection](../assets/images/delivery/Pasted%20image%2020261113221654.png)
 
 messages from root exposed creds
 

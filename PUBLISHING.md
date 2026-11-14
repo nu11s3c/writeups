@@ -23,3 +23,10 @@ The public repo holds **curated writeups, not raw engagement archives**.
 **Private CherryTree / Obsidian / terminal logs → private evidence map → public outline → your prose → technical review → publish.**
 
 Sources: [HTB sharing guidelines](https://help.hackthebox.com/en/articles/5188925-streaming-writeups-walkthrough-guidelines), [GitHub Markdown](https://docs.github.com/en/get-started/writing-on-github).
+
+## Repository layout
+
+- One lowercase Markdown file per machine: `machines/NN-machine-name.md` (e.g. `machines/00-access.md`, `machines/01-delivery.md`). Assign the next sequential two-digit number for new machines.
+- Store shared branding in `assets/branding/` and machine screenshots in `assets/images/<machine>/`.
+- Reference assets from machine Markdown using relative paths, e.g. `../assets/images/delivery/screenshot.png`.
+- Update the root README index after publishing. Do not create per-machine directories under `machines/`.
