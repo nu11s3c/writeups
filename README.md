@@ -21,6 +21,7 @@ A public record of my work on **authorized, publishable security labs**.
 |:---|:---|:---|:---|:---|
 | [Access](CPTS%20prep/00-access.md) | Hack The Box · retired | Windows Server 2008 R2 | Anonymous FTP → file analysis → Telnet → stored credentials / DPAPI | **Published** |
 | [Delivery](CPTS%20prep/01-delivery.md) | Hack The Box · retired | Linux (Debian) | osTicket → Mattermost → SSH → MariaDB / bcrypt → password reuse | **Published** |
+| [Postman](CPTS%20prep/02-postman.md) | Hack The Box · retired | Linux (Ubuntu) | Redis → SSH → exposed key / passphrase reuse → Webmin | **Published** |
 
 
 ---
