@@ -19,8 +19,8 @@ A public record of my work on **authorized, publishable security labs**.
 
 | Lab | Platform | Target | Main techniques | Stage |
 |:---|:---|:---|:---|:---|
-| [Access](machines/00-access.md) | Hack The Box · retired | Windows Server 2008 R2 | Anonymous FTP → file analysis → Telnet → stored credentials / DPAPI | **Published** |
-| [Delivery](machines/01-delivery.md) | Hack The Box · retired | Linux (Debian) | osTicket → Mattermost → SSH → MariaDB / bcrypt → password reuse | **Published** |
+| [Access](CPTS%20prep/00-access.md) | Hack The Box · retired | Windows Server 2008 R2 | Anonymous FTP → file analysis → Telnet → stored credentials / DPAPI | **Published** |
+| [Delivery](CPTS%20prep/01-delivery.md) | Hack The Box · retired | Linux (Debian) | osTicket → Mattermost → SSH → MariaDB / bcrypt → password reuse | **Published** |
 
 
 ---
