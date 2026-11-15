@@ -1,18 +1,18 @@
 <p align="center">
-  <img src="../assets/branding/nu11s3c-banner.svg" alt="nu11s3c security writeups" width="100%" />
+  <img src="../assets/branding/nu11s3c-banner.svg" alt="nu11s3c">
 </p>
 
 # busqueda - hack the box
 
-**platform:** Hack The Box · retired machine  
-**os:** Linux (Ubuntu 22.04.2 LTS)  
-**difficulty:** Easy  
-**outcome:** User + Root  
-**focus:** web enumeration, Python code injection, Git, credential reuse, Docker enumeration, Linux privilege escalation
+**Platform:** Hack The Box  
+**OS:** Linux  
+**Difficulty:** Easy  
+**Outcome:** User + Root  
+**Focus:** web enumeration, Python code injection, Git, credential reuse, Docker enumeration, Linux privilege escalation
 
 ---
 
-## `00 / prep & enumeration`
+## 00 / prep & enumeration
 
 init environment
 
@@ -87,7 +87,7 @@ visiting the web server I found a web app called `Searchor` version `2.4.0`. web
 
 ![Searcher home page](../assets/images/busqueda/searcher-home.png)
 
-## `01 / initial access`
+## 01 / initial access
 
 With only SSH and HTTP available, I started with the web application.
 
@@ -131,7 +131,7 @@ user.txt
 
 user obtained
 
-## `02 / internal enumeration`
+## 03 / internal enumeration
 
 Now that I had a shell, I started working through my Linux enumeration methodology.
 
@@ -192,7 +192,7 @@ User svc may run the following commands on busqueda:
     (root) /usr/bin/python3 /opt/scripts/system-checkup.py *
 ```
 
-## `03 / privilege escalation enumeration`
+## 04 / privilege escalation enumeration
 
 the script was owned by root and executable but not readable by my user. So I couldn't just cat the script
 
@@ -253,7 +253,7 @@ running it from `/opt/scripts`, however, produced the container status, port map
 
 that difference in behavior mattered. The script's outcome seemed to depend on the current working directory
 
-## `04 / root`
+## 05 / root
 
 the issue was not Docker itself. It was the privileged checkup script's handling of a relative script path
 
@@ -283,7 +283,7 @@ root flag was in `/root/root.txt`
 
 root obtained
 
-## `05 / takeaways`
+## 06 / takeaways
 
 biggest lesson on this box was the difference between finding something interesting and finding something that actually gets me closer to my objective
 
@@ -294,7 +294,7 @@ the Docker inspection exposed credentials and gave me a better understanding of 
 - understand what a template evaluates before assuming it provides arbitrary command execution
 - when a privileged wrapper behaves differently depending on the working directory, investigate the dependency rather than treating the failure as random
 
-## `06 / references`
+## 07 / references
 
 - [CVE-2023-43364](https://www.cve.org/CVERecord?id=CVE-2023-43364)
 - [Searchor 2.4.0 PoC](https://github.com/nexis-nexis/Searchor-2.4.0-POC-Exploit-)
