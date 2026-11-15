@@ -11,7 +11,7 @@
 
 ---
 
-## `00 \ prep`
+## `00 / prep`
 ---
 
 prepped engagement structure; fish for environment variables and tmux for logging
@@ -59,7 +59,7 @@ CPTS/CPTS-Day04/underpass
 
 ---
 
-## `01 \ recon`
+## `01 / recon`
 ---
 
 ### service discovery
@@ -152,7 +152,7 @@ SNMP identified the machine as a daloRADIUS server. at least now I had something
 
 ---
 
-## `02 \ web enumeration`
+## `02 / web enumeration`
 ---
 
 ### daloradius
@@ -214,7 +214,7 @@ spent way more time on this than I needed to. went looking through the source co
 
 ---
 
-## `03 \ initial access`
+## `03 / initial access`
 ---
 
 ### authenticated enumeration
@@ -248,7 +248,7 @@ initial access
 
 ---
 
-## `04 \ privilege escalation`
+## `04 / privilege escalation`
 
 ### local enumeration
 
@@ -304,7 +304,7 @@ root.
 
 ---
 
-## `05 \ findings and lessons`
+## `05 / findings and lessons`
 
 ### systems / methods / findings
 
