@@ -6,7 +6,7 @@
 
 
 <p align="center">
-  <kbd>WINDOWS</kbd> &nbsp; <kbd>LINUX</kbd> &nbsp; <kbd>NETWORK</kbd> &nbsp; <kbd>WEB</kbd> &nbsp; <kbd>ACTIVE DIRECTORY</kbd>
+  <kbd>WINDOWS</kbd> &nbsp; <kbd>linux</kbd> &nbsp; <kbd>NETWORK</kbd> &nbsp; <kbd>WEB</kbd> &nbsp; <kbd>ACTIVE DIRECTORY</kbd>
 </p>
 
 ---
@@ -16,10 +16,10 @@
 | lab | platform | target | techniques |
 |:---|:---|:---|:---|
 | [access](CPTS%20prep/00-access.md) | hack the box · retired | windows server 2008 R2 | anonymous ftp → file analysis → telnet → stored credentials / DPAPI |
-| [delivery](CPTS%20prep/01-delivery.md) | hack the box · retired | Linux (Debian) | osTicket → mattermost → ssh → mariaDB / bcrypt → password reuse |
-| [postman](CPTS%20prep/02-postman.md) | hack the box · retired | Linux (Ubuntu) | redis → ssh → exposed key / passphrase reuse → webmin |
-| [underpass](CPTS%20prep/03-underpass.md) | hack the box · retired | Linux (Ubuntu) | UDP / SNMP · daloRADIUS · credential security · sudo / mosh |
-| [busqueda](CPTS%20prep/04-busqueda.md) | hack the box · retired | Linux (Ubuntu) | searchor · git credentials · docker inspection · sudo / relative path |
+| [delivery](CPTS%20prep/01-delivery.md) | hack the box · retired | linux (debian) | osTicket → mattermost → ssh → mariaDB / bcrypt → password reuse |
+| [postman](CPTS%20prep/02-postman.md) | hack the box · retired | linux (ubunut) | redis → ssh → exposed key / passphrase reuse → webmin |
+| [underpass](CPTS%20prep/03-underpass.md) | hack the box · retired | linux (ubunut) | UDP / SNMP · daloRADIUS · credential security · sudo / mosh |
+| [busqueda](CPTS%20prep/04-busqueda.md) | hack the box · retired | linux (ubunut) | searchor · git credentials · docker inspection · sudo / relative path |
 
 
 ---
