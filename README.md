@@ -14,7 +14,7 @@
 ## `00 / index`
 
 | lab | platform | target | techniques |
-|:---|:---|:---|:---|:---|
+|:---|:---|:---|:---|
 | [access](CPTS%20prep/00-access.md) | hack the box · retired | windows server 2008 R2 | anonymous ftp → file analysis → telnet → stored credentials / DPAPI |
 | [delivery](CPTS%20prep/01-delivery.md) | hack the box · retired | Linux (Debian) | osTicket → mattermost → ssh → mariaDB / bcrypt → password reuse |
 | [postman](CPTS%20prep/02-postman.md) | hack the box · retired | Linux (Ubuntu) | redis → ssh → exposed key / passphrase reuse → webmin |
