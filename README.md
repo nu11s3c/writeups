@@ -11,19 +11,15 @@
 
 ---
 
-## `01 / About this repository`
+## `00 / index`
 
-A public record of my work on **authorized, publishable security labs**. 
-
-## `02 / Writeup index`
-
-| Lab | Platform | Target | Main techniques | Stage |
+| lab | platform | target | techniques |
 |:---|:---|:---|:---|:---|
-| [Access](CPTS%20prep/00-access.md) | Hack The Box · retired | Windows Server 2008 R2 | Anonymous FTP → file analysis → Telnet → stored credentials / DPAPI | **Published** |
-| [Delivery](CPTS%20prep/01-delivery.md) | Hack The Box · retired | Linux (Debian) | osTicket → Mattermost → SSH → MariaDB / bcrypt → password reuse | **Published** |
-| [Postman](CPTS%20prep/02-postman.md) | Hack The Box · retired | Linux (Ubuntu) | Redis → SSH → exposed key / passphrase reuse → Webmin | **Published** |
-| [Underpass](CPTS%20prep/03-underpass.md) | Hack The Box · retired | Linux (Ubuntu) | UDP / SNMP · daloRADIUS · credential security · sudo / Mosh | **Published** |
-| [Busqueda](CPTS%20prep/04-busqueda.md) | Hack The Box · retired | Linux (Ubuntu) | Searchor · Git credentials · Docker inspection · sudo / relative path | **Published** |
+| [access](CPTS%20prep/00-access.md) | hack the box · retired | windows server 2008 R2 | anonymous ftp → file analysis → telnet → stored credentials / DPAPI |
+| [delivery](CPTS%20prep/01-delivery.md) | hack the box · retired | Linux (Debian) | osTicket → mattermost → ssh → mariaDB / bcrypt → password reuse |
+| [postman](CPTS%20prep/02-postman.md) | hack the box · retired | Linux (Ubuntu) | redis → ssh → exposed key / passphrase reuse → webmin |
+| [underpass](CPTS%20prep/03-underpass.md) | hack the box · retired | Linux (Ubuntu) | UDP / SNMP · daloRADIUS · credential security · sudo / mosh |
+| [busqueda](CPTS%20prep/04-busqueda.md) | hack the box · retired | Linux (Ubuntu) | searchor · git credentials · docker inspection · sudo / relative path |
 
 
 ---
