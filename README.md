@@ -23,6 +23,7 @@ A public record of my work on **authorized, publishable security labs**.
 | [Delivery](CPTS%20prep/01-delivery.md) | Hack The Box · retired | Linux (Debian) | osTicket → Mattermost → SSH → MariaDB / bcrypt → password reuse | **Published** |
 | [Postman](CPTS%20prep/02-postman.md) | Hack The Box · retired | Linux (Ubuntu) | Redis → SSH → exposed key / passphrase reuse → Webmin | **Published** |
 | [Underpass](CPTS%20prep/03-underpass.md) | Hack The Box · retired | Linux (Ubuntu) | UDP / SNMP · daloRADIUS · credential security · sudo / Mosh | **Published** |
+| [Busqueda](CPTS%20prep/04-busqueda.md) | Hack The Box · retired | Linux (Ubuntu) | Searchor · Git credentials · Docker inspection · sudo / relative path | **Published** |
 
 
 ---
