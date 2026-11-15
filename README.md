@@ -6,7 +6,7 @@
 
 
 <p align="center">
-  <kbd>WINDOWS</kbd> &nbsp; <kbd>linux</kbd> &nbsp; <kbd>NETWORK</kbd> &nbsp; <kbd>WEB</kbd> &nbsp; <kbd>ACTIVE DIRECTORY</kbd>
+  <kbd>windows</kbd> &nbsp; <kbd>linux</kbd> &nbsp; <kbd>networking</kbd> &nbsp; <kbd>web</kbd> &nbsp; <kbd>active directory</kbd>
 </p>
 
 ---
