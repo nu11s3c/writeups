@@ -21,6 +21,7 @@
 | [underpass](CPTS%20prep/03-underpass.md) | hack the box · retired | linux (ubunut) | UDP / SNMP · daloRADIUS · credential security · sudo / mosh |
 | [busqueda](CPTS%20prep/04-busqueda.md) | hack the box · retired | linux (ubunut) | searchor · git credentials · docker inspection · sudo / relative path |
 | [monitored](CPTS%20prep/05-monitored.md) | hack the box · retired | linux (debian) | SNMP -> Nagios XI · SQL injection / API keys · monitor commands · sudo / systemd |
+| [trick](CPTS%20prep/06-trick.md) | hack the box · retired | linux (debian) | DNS AXFR · payroll SQLi / PHP source · marketing LFI / SSH key · fail2ban |
 
 
 ---
