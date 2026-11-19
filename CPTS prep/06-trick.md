@@ -497,7 +497,7 @@ root@trick:/# cat /root/root.txt
 | Login errors leaked a PHP source path                                                | malformed quote was reaching the SQL layer                       | confirmed manual SQL injection and admin session       |
 | `page=./users` behaved like `users`                                                  | page routing might be filesystem-backed                          | PHP filter disclosed source code                       |
 | PHP source referenced database configuration                                         | follow known dependencies rather than guessing files             | recovered DB settings and learned the login root cause |
-| upload handler was reachable but could not write                                     | A `200` response was not enough to prove file write              | parked the upload path                                 |
+| upload handler was reachable but could not write                                     | `200` response was not enough to prove file write              | parked the upload path                                 |
 | one vhost had been found, but the naming pattern remained                            | `preprod-` might be reused elsewhere                             | `ffuf` uncovered the marketing vhost                   |
 | marketing returned identical hashes for `about.html` and `../about.html`             | suspected nonrecursive traversal filtering                       | bypass ultimately exposed `/etc/passwd`                |
 | `/etc/passwd` identified `michael`                                                   | real Linux account was a better target than a web account        | private key disclosure and SSH foothold                |
