@@ -474,4 +474,4 @@ chmod 600 decrypted.txt
 
 ---
 
-<sub>nu11s3c // retired lab; no flags, reusable credentials, or original loot published.</sub>
+<sub>nu11s3c</sub>
