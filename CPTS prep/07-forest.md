@@ -13,7 +13,6 @@
 
 ## `00 / prep`
 
----
 
 started with the usual fish engagement variables and tmux logging
 
@@ -158,7 +157,6 @@ that final flag made `svc-alfresco` a candidate for AS-REP roasting
 
 ## `02 / initial access: AS-REP roasting`
 
----
 
 ### obtaining a response without knowing the password
 
@@ -322,7 +320,6 @@ InheritedObjectType   : bf967aba-0de6-11d0-a285-00aa003049e2
 
 ## `04 / group membership & token refresh`
 
----
 
 ### checking before changing
 
@@ -377,7 +374,7 @@ when the AD group membership later disappeared, the new session **still** carrie
 
 ## `05 / writing the domain object's DACL`
 
----
+
 
 ### the object that needed changing
 
@@ -458,7 +455,6 @@ InheritanceType       : None
 
 ## `06 / DCSync`
 
----
 
 
 ```fish
@@ -497,7 +493,6 @@ this is why domain-object `WriteDacl` is so dangerous: an account that can chang
 
 ## `07 / pass-the-hash`
 
----
 
 DCSync gave me the Administrator NT hash, not the plaintext password. NTLM authentication can use the hash directly when the endpoint supports it, so I tried Evil-WinRM with `-H`:
 
@@ -519,7 +514,6 @@ successful authentication plus `whoami` established an Administrator security co
 
 ## `08 / findings and lessons`
 
----
 
 ### systems / methods / findings
 
