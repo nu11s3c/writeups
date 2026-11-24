@@ -87,6 +87,8 @@ the full TCP scan only returned 5985 for some reason, and top 100 UDP returned n
 
 visited port 80, was greeted by a Basic auth prompt. checked the response in Burp
 
+![HTTP Basic authentication prompt](../assets/images/driver/01-auth-prompt.png)
+
 ```http
 HTTP/1.1 401 Unauthorized
 Server: Microsoft-IIS/10.0
@@ -94,7 +96,11 @@ X-Powered-By: PHP/7.3.25
 WWW-Authenticate: Basic realm="MFP Firmware Update Center. Please enter password for admin"
 ```
 
+![Burp response showing the authentication realm](../assets/images/driver/02-auth-response.png)
+
 the realm gave me the username `admin`. tried the obvious default creds and got in
+
+![Authenticated firmware update center](../assets/images/driver/03-home.png)
 
 printer firmware update center. the footer gave me `support@driver.htb`, so added the hostname to `/etc/hosts`
 
@@ -111,6 +117,8 @@ confirmed `IIS 10.0` and `PHP 7.3.25`
 the firmware updates page had an interesting description
 
 > Select printer model and upload the respective firmware update to our file share. Our testing team will review the uploads manually and initiates the testing soon.
+
+![Firmware upload form](../assets/images/driver/04-firmware-upload.png)
 
 two things stood out, the files were being uploaded to a share and someone was going to be manually reviewing them. checked the page source
 
@@ -175,6 +183,8 @@ Responder IP               [VPN_IP]
 submitted the file through the firmware page. the original upload POST isn't in my notes; the saved Burp request is the subsequent GET
 
 the upload response returned `msg=SUCCESS`. that by itself didn't prove the file had been processed by a user, but Responder subsequently received an SMB authentication attempt from the target
+
+![Successful firmware upload response](../assets/images/driver/05-upload-response.png)
 
 
 this was a NetNTLMv2 challenge-response, not Tony's NT hash
@@ -515,6 +525,8 @@ FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException,Invoke
 ```
 
 despite the error, Penelope received a new shell as SYSTEM
+
+![PrintNightmare error and SYSTEM shell in Penelope](../assets/images/driver/06-system.png)
 
 ```cmd
 C:\Windows\system32>whoami
