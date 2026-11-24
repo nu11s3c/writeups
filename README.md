@@ -23,6 +23,7 @@
 | [monitored](CPTS%20prep/05-monitored.md) | hack the box · retired | linux (debian) | SNMP -> Nagios XI · SQL injection / API keys · monitor commands · sudo / systemd |
 | [trick](CPTS%20prep/06-trick.md) | hack the box · retired | linux (debian) | DNS AXFR · payroll SQLi / PHP source · marketing LFI / SSH key · fail2ban |
 | [forest](CPTS%20prep/07-forest.md) | hack the box · retired | windows server 2016 | LDAP / RPC · AS-REP roasting -> WinRM · Exchange permissions / WriteDacl -> DCSync · pass-the-hash |
+| [driver](CPTS%20prep/08-driver.md) | hack the box · retired | windows 10 | HTTP Basic auth · SCF / NetNTLMv2 · WinRM · Ricoh driver ACLs · PrintNightmare |
 
 
 ---
