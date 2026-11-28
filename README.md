@@ -25,6 +25,7 @@
 | [forest](CPTS%20prep/07-forest.md) | hack the box · retired | windows server 2016 | LDAP / RPC · AS-REP roasting -> WinRM · Exchange permissions / WriteDacl -> DCSync · pass-the-hash |
 | [driver](CPTS%20prep/08-driver.md) | hack the box · retired | windows 10 | HTTP Basic auth · SCF / NetNTLMv2 · WinRM · Ricoh driver ACLs · PrintNightmare |
 | [magic](CPTS%20prep/09-magic.md) | hack the box · retired | linux (ubuntu) | SQL injection · upload validation · password reuse · SUID / PATH |
+| [cascade](CPTS%20prep/10-cascade.md) | hack the box · retired | windows server 2008 R2 | LDAP · SMB · TightVNC · .NET decompilation / AES · AD Recycle Bin · password reuse |
 
 
 ---
